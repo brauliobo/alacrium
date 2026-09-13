@@ -1,15 +1,7 @@
 diff --git a/components/privacy_sandbox/privacy_sandbox_features.cc b/components/privacy_sandbox/privacy_sandbox_features.cc
 --- a/components/privacy_sandbox/privacy_sandbox_features.cc
 +++ b/components/privacy_sandbox/privacy_sandbox_features.cc
-@@ -8,6 +8,6 @@
- namespace privacy_sandbox {
- 
--BASE_FEATURE(kPrivacySandboxSettings4, base::FEATURE_ENABLED_BY_DEFAULT);
-+BASE_FEATURE(kPrivacySandboxSettings4, base::FEATURE_DISABLED_BY_DEFAULT);
- 
- const char kPrivacySandboxSettings4ConsentRequiredName[] = "consent-required";
- const char kPrivacySandboxSettings4NoticeRequiredName[] = "notice-required";
-@@ -60,6 +60,6 @@ BASE_FEATURE(kDisablePrivacySandboxPrompts, base::FEATURE_ENABLED_BY_DEFAULT);
+@@ -10,6 +10,6 @@ namespace privacy_sandbox {
  
  BASE_FEATURE(kEnforcePrivacySandboxAttestations,
 -             base::FEATURE_ENABLED_BY_DEFAULT);
@@ -17,74 +9,23 @@ diff --git a/components/privacy_sandbox/privacy_sandbox_features.cc b/components
  
  BASE_FEATURE(kDefaultAllowPrivacySandboxAttestations,
               base::FEATURE_DISABLED_BY_DEFAULT);
-@@ -76,10 +76,10 @@ BASE_FEATURE(kPrivacySandboxAttestationsLoadFromAPKAsset,
- #endif  // BUILDFLAG(IS_ANDROID)
- 
- BASE_FEATURE(kPrivateAggregationDebugReportingIgnoreSiteExceptions,
--             base::FEATURE_ENABLED_BY_DEFAULT);
-+             base::FEATURE_DISABLED_BY_DEFAULT);
- 
- 
--BASE_FEATURE(kRelatedWebsiteSetsUi, base::FEATURE_ENABLED_BY_DEFAULT);
-+BASE_FEATURE(kRelatedWebsiteSetsUi, base::FEATURE_DISABLED_BY_DEFAULT);
- 
- BASE_FEATURE(kPsDualWritePrefsToNoticeStorage,
-              base::FEATURE_ENABLED_BY_DEFAULT);
-@@ -91,4 +91,4 @@ BASE_FEATURE(kPrivacySandboxNoticeFramework, base::FEATURE_DISABLED_BY_DEFAULT);
+@@ -24,6 +24,6 @@ BASE_FEATURE(kPrivacySandboxAttestationsLoadFromAPKAsset,
+ BASE_FEATURE(kRelatedWebsiteSetsUi, base::FEATURE_DISABLED_BY_DEFAULT);
  
  BASE_FEATURE(kPrivacySandboxAdPrivacyUxDeprecation,
 -             base::FEATURE_ENABLED_BY_DEFAULT);
 +             base::FEATURE_DISABLED_BY_DEFAULT);
+ 
  }  // namespace privacy_sandbox
 diff --git a/components/privacy_sandbox/privacy_sandbox_prefs.cc b/components/privacy_sandbox/privacy_sandbox_prefs.cc
 --- a/components/privacy_sandbox/privacy_sandbox_prefs.cc
 +++ b/components/privacy_sandbox/privacy_sandbox_prefs.cc
-@@ -51,7 +51,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
+@@ -23,7 +23,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
        prefs::kPrivacySandboxRelatedWebsiteSetsDataAccessAllowedInitialized,
        false);
    registry->RegisterBooleanPref(
 -      prefs::kPrivacySandboxRelatedWebsiteSetsEnabled, true,
 +      prefs::kPrivacySandboxRelatedWebsiteSetsEnabled, false,
        user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
- 
-   registry->RegisterBooleanPref(prefs::kPrivacySandboxTopicsConsentGiven,
-diff --git a/components/privacy_sandbox/privacy_sandbox_settings_impl.cc b/components/privacy_sandbox/privacy_sandbox_settings_impl.cc
---- a/components/privacy_sandbox/privacy_sandbox_settings_impl.cc
-+++ b/components/privacy_sandbox/privacy_sandbox_settings_impl.cc
-@@ -122,7 +122,8 @@ std::set<browsing_topics::Topic> GetTopicsSetFromString(
- 
- // static
- bool PrivacySandboxSettingsImpl::IsAllowed(Status status) {
--  return status == Status::kAllowed;
-+  (void)status;
-+  return false;
  }
  
- // static
-@@ -697,7 +698,7 @@ void PrivacySandboxSettingsImpl::SetTopicsBlockedForTesting() {
- }
- 
- bool PrivacySandboxSettingsImpl::IsPrivacySandboxRestricted() const {
--  return delegate_->IsPrivacySandboxRestricted();
-+  return true;
- }
- 
- bool PrivacySandboxSettingsImpl::IsPrivacySandboxCurrentlyUnrestricted() const {
-@@ -762,15 +763,12 @@ PrivacySandboxSettingsImpl::GetSiteAccessAllowedStatus(
- PrivacySandboxSettingsImpl::Status
- PrivacySandboxSettingsImpl::GetPrivacySandboxAllowedStatus(
-     bool should_ignore_restriction /*=false*/) const {
-+  (void)should_ignore_restriction;
-   if (delegate_->IsIncognitoProfile()) {
-     return Status::kIncognitoProfile;
-   }
- 
--  if (IsPrivacySandboxRestricted() && !should_ignore_restriction) {
--    return Status::kRestricted;
--  }
--
--  return Status::kAllowed;
-+  return Status::kRestricted;
- }
- 
- PrivacySandboxSettingsImpl::Status

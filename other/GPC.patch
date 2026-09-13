@@ -1,11 +1,8 @@
 diff --git a/third_party/blink/renderer/platform/runtime_enabled_features.json5 b/third_party/blink/renderer/platform/runtime_enabled_features.json5
 --- a/third_party/blink/renderer/platform/runtime_enabled_features.json5
 +++ b/third_party/blink/renderer/platform/runtime_enabled_features.json5
-@@ -3459,6 +3459,7 @@
-     },
+@@ -3408,3 +3408,4 @@
      {
        name: "GlobalPrivacyControlForce",
 +      base_feature_status: "enabled",
      },
-     {
-       name: "GraphemeClusterBoundsCheck",

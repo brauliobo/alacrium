@@ -14,17 +14,19 @@ diff --git a/chrome/browser/ui/webui/chrome_web_ui_configs.cc b/chrome/browser/u
 index bced2aebb3495..56836e1a186b3 100644
 --- a/chrome/browser/ui/webui/chrome_web_ui_configs.cc
 +++ b/chrome/browser/ui/webui/chrome_web_ui_configs.cc
-@@ -55,6 +55,7 @@
+@@ -56,7 +56,8 @@
  #include "chrome/browser/ui/webui/signin_internals_ui.h"
  #include "chrome/browser/ui/webui/subresource_filter/subresource_filter_internals_ui.h"
+ #include "chrome/browser/ui/webui/suggest_internals/suggest_internals_ui.h"
  #include "chrome/browser/ui/webui/sync_internals/sync_internals_ui.h"
 +#include "chrome/browser/ui/webui/alacrium_easter_eggs.h"
  #include "chrome/browser/ui/webui/translate_internals/translate_internals_ui.h"
  #include "chrome/browser/ui/webui/usb_internals/usb_internals_ui.h"
  #include "chrome/browser/ui/webui/version/version_ui.h"
-@@ -303,6 +304,7 @@ void RegisterChromeWebUIConfigs() {
+@@ -310,7 +311,8 @@ void RegisterChromeWebUIConfigs() {
                       subresource_filter::SubresourceFilterInternalsUIConfig>());
    map.AddWebUIConfig(std::make_unique<SiteEngagementUIConfig>());
+   map.AddWebUIConfig(std::make_unique<SuggestInternalsUIConfig>());
    map.AddWebUIConfig(std::make_unique<SyncInternalsUIConfig>());
 +  map.AddWebUIConfig(std::make_unique<AlacriumWebUILoadUIConfig>());
    map.AddWebUIConfig(std::make_unique<TranslateInternalsUIConfig>());

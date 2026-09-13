@@ -235,28 +235,29 @@ diff --git a/content/public/common/content_switches.cc b/content/public/common/c
 index a5dd79908643a..cda84f0d14122 100644
 --- a/content/public/common/content_switches.cc
 +++ b/content/public/common/content_switches.cc
-@@ -328,6 +328,9 @@ const char kEnableExperimentalWebPlatformFeatures[] =
+@@ -325,6 +325,9 @@ const char kEnableExperimentalWebPlatformFeatures[] =
  // status:"experimental", which are enabled when running web tests.
  const char kEnableBlinkTestFeatures[] = "enable-blink-test-features";
- 
+
 +// Enables support for FTP URLs. See https://crbug.com/333943.
 +const char kEnableFtp[] = "enable-ftp";
 +
+ // Exposes the window.internals object in JavaScript for testing.
+ const char kExposeInternalsForTesting[] = "expose-internals-for-testing";
+ 
  // Disables all RuntimeEnabledFeatures that can be enabled via OriginTrials.
- const char kDisableOriginTrialControlledBlinkFeatures[] =
-     "disable-origin-trial-controlled-blink-features";
 diff --git a/content/public/common/content_switches.h b/content/public/common/content_switches.h
 index 17e834a0e19e6..b36bd2876b1c2 100644
 --- a/content/public/common/content_switches.h
 +++ b/content/public/common/content_switches.h
-@@ -104,6 +104,7 @@ CONTENT_EXPORT extern const char kEnableExperimentalCookieFeatures[];
+@@ -102,6 +102,7 @@ CONTENT_EXPORT extern const char kEnableExperimentalCookieFeatures[];
  CONTENT_EXPORT extern const char kEnableExperimentalWebAssemblyFeatures[];
  CONTENT_EXPORT extern const char kEnableExperimentalWebPlatformFeatures[];
  CONTENT_EXPORT extern const char kEnableBlinkTestFeatures[];
 +CONTENT_EXPORT extern const char kEnableFtp[];
+ CONTENT_EXPORT extern const char kExposeInternalsForTesting[];
  CONTENT_EXPORT extern const char kEnableGpuMemoryBufferVideoFrames[];
  CONTENT_EXPORT extern const char kEnableIsolatedWebAppsInRenderer[];
- CONTENT_EXPORT extern const char kEnableLCDText[];
 diff --git a/content/public/renderer/render_frame.h b/content/public/renderer/render_frame.h
 index b2e16f96177be..f789f88377185 100644
 --- a/content/public/renderer/render_frame.h

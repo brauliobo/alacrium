@@ -34,8 +34,8 @@ diff --git a/chromium/config/Chrome/linux/x64/config.h b/chromium/config/Chrome/
 diff --git a/chromium/config/Chrome/linux/x64/config_components.h b/chromium/config/Chrome/linux/x64/config_components.h
 --- a/chromium/config/Chrome/linux/x64/config_components.h
 +++ b/chromium/config/Chrome/linux/x64/config_components.h
-@@ -13,7 +13,7 @@
- #define CONFIG_DOVI_RPU_BSF 0
+@@ -14,7 +14,7 @@
+ #define CONFIG_DOVI_SPLIT_BSF 0
  #define CONFIG_DTS2PTS_BSF 0
  #define CONFIG_DV_ERROR_MARKER_BSF 0
 -#define CONFIG_EAC3_CORE_BSF 0
@@ -170,8 +170,8 @@ diff --git a/chromium/config/Chrome/mac/x64/config.h b/chromium/config/Chrome/ma
 diff --git a/chromium/config/Chrome/mac/x64/config_components.h b/chromium/config/Chrome/mac/x64/config_components.h
 --- a/chromium/config/Chrome/mac/x64/config_components.h
 +++ b/chromium/config/Chrome/mac/x64/config_components.h
-@@ -13,7 +13,7 @@
- #define CONFIG_DOVI_RPU_BSF 0
+@@ -14,7 +14,7 @@
+ #define CONFIG_DOVI_SPLIT_BSF 0
  #define CONFIG_DTS2PTS_BSF 0
  #define CONFIG_DV_ERROR_MARKER_BSF 0
 -#define CONFIG_EAC3_CORE_BSF 0
@@ -306,8 +306,8 @@ diff --git a/chromium/config/Chrome/win/x64/config.h b/chromium/config/Chrome/wi
 diff --git a/chromium/config/Chrome/win/x64/config_components.h b/chromium/config/Chrome/win/x64/config_components.h
 --- a/chromium/config/Chrome/win/x64/config_components.h
 +++ b/chromium/config/Chrome/win/x64/config_components.h
-@@ -13,7 +13,7 @@
- #define CONFIG_DOVI_RPU_BSF 0
+@@ -14,7 +14,7 @@
+ #define CONFIG_DOVI_SPLIT_BSF 0
  #define CONFIG_DTS2PTS_BSF 0
  #define CONFIG_DV_ERROR_MARKER_BSF 0
 -#define CONFIG_EAC3_CORE_BSF 0
