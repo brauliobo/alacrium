@@ -45,7 +45,7 @@ upstream diff report, and stops before building.
 
 ## Current Rebase Rules
 
-- Chromium target for this PR is `153.0.8010.36`.
+- Chromium target for this PR is `153.0.8010.47`.
 - Do not restore the old JPEG XL overlay; Chromium M147+ has native JPEG XL build
   integration via `enable_jxl_decoder`.
 - Keep Chrome/Chromium source changes reproducible through `src/`, `other/`,
