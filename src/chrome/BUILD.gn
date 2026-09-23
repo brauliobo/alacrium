@@ -404,6 +404,7 @@ if (is_win) {
     sources = [
       "//base/win/dllmain.cc",
       "app/chrome_main.cc",
+      "app/chrome_main.h",
       "app/chrome_main_delegate.cc",
       "app/chrome_main_delegate.h",
       "app/startup_timestamps.h",
@@ -418,6 +419,12 @@ if (is_win) {
       "//chrome/app:chrome_dll_resources",
       "//chrome/app:command_ids",
       "//chrome/app/theme:chrome_unscaled_resources",
+      "//chrome/browser:chrome_content_browser_client",
+      "//chrome/browser:chrome_process_singleton",
+      "//chrome/browser:process_singleton",
+      "//chrome/browser:startup_data",
+      "//chrome/browser/lifetime",
+      "//chrome/browser/win/isolated_browser:isolated_browser_support",
       "//chrome/chrome_elf",
       "//chrome/common:buildflags",
       "//chrome/common:version_header",
@@ -427,12 +434,10 @@ if (is_win) {
       "//components/crash/core/app",
       "//components/memory_system",
       "//components/policy:generated",
+      "//components/webapps/isolated_web_apps:scheme",
       "//content/public/app",
       "//crypto",
-      "//headless:headless_non_renderer",
-      "//headless:headless_shell_browser_lib",
       "//net:net_resources",
-      "//ppapi/buildflags",
       "//sandbox/win:sandbox",
       "//third_party/cld_3/src/src:cld_3",
       "//third_party/wtl",
@@ -445,8 +450,8 @@ if (is_win) {
       deps += [ "//ui/compositor" ]
     }
 
-    if (is_chromeos) {
-      deps += [ "//chrome/browser/ash/schedqos" ]
+    if (is_chrome_for_testing) {
+      deps += [ "//chrome/browser/chrome_for_testing:browser" ]
     }
   }
 
@@ -780,6 +785,10 @@ if (is_win) {
           # chrome_exe_main_mac.cc uses with `dlopen` and avoids loading the
           # framework into memory twice.
           "-Wl,-rpath,@executable_path/../../../../../../..",
+
+          # Add an rpath to the Libraries directory in the versioned framework
+          # for libraries packaged there.
+          "-Wl,-rpath,@loader_path/../../../../Libraries",
 
           # Add an rpath up to the base for all other libraries.
           "-Wl,-rpath,@loader_path/../../../../../../../../../..",

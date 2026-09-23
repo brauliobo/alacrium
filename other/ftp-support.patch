@@ -172,12 +172,13 @@ diff --git a/chrome/common/net/net_resource_provider.cc b/chrome/common/net/net_
 index ed98919e49eb6..761d9e6cb9e87 100644
 --- a/chrome/common/net/net_resource_provider.cc
 +++ b/chrome/common/net/net_resource_provider.cc
-@@ -35,6 +35,8 @@ struct LazyDirectoryListerCacher {
-               l10n_util::GetStringUTF8(IDS_DIRECTORY_LISTING_DATE_MODIFIED));
-     value.Set("language",
-               l10n_util::GetLanguage(base::i18n::GetConfiguredLocale()));
-+	value.Set("listingParsingErrorBoxText",
-+        l10n_util::GetStringUTF8(IDS_DIRECTORY_LISTING_PARSING_ERROR_BOX_TEXT));
+@@ -35,7 +35,9 @@ struct LazyDirectoryListerCacher {
+    value.Set("headerDateModified",
+              l10n_util::GetStringUTF8(IDS_DIRECTORY_LISTING_DATE_MODIFIED));
+    value.Set("language", base::i18n::GetLanguageSubtagUsingLanguageTag(
+                              base::i18n::GetConfiguredLocale()));
++    value.Set("listingParsingErrorBoxText",
++              l10n_util::GetStringUTF8(IDS_DIRECTORY_LISTING_PARSING_ERROR_BOX_TEXT));
      value.Set("textdirection", base::i18n::IsRTL() ? "rtl" : "ltr");
      std::string str = webui::GetI18nTemplateHtml(
          ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
@@ -1501,8 +1502,9 @@ index 3ccc9c3fdc66a..20fba35991591 100644
  #include "third_party/blink/renderer/platform/loader/static_data_navigation_body_loader.h"
  #include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
  #include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
-@@ -410,6 +411,7 @@ struct SameSizeAsDocumentLoader
+@@ -410,7 +411,8 @@ struct SameSizeAsDocumentLoader
    bool has_text_fragment_token;
+   bool text_fragment_token_had_trusted_initiator;
    std::optional<String> internal_scroll_to_text_fragment;
    bool was_discarded;
 +  bool listing_ftp_directory;
