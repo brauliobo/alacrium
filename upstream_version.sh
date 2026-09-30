@@ -37,7 +37,7 @@ if [ -d "$HOME/depot_tools" ]; then
   export PATH="$HOME/depot_tools:$PATH"
 fi
 
-CR_VER="154.0.8037.57"
+CR_VER="154.0.8037.92"
 
 export CR_VER &&
 
