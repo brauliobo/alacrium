@@ -20,10 +20,11 @@ diff --git a/content/shell/BUILD.gn b/content/shell/BUILD.gn
      testonly = true
      deps = [ "//content/shell/android:content_shell_apk" ]
    }
-@@ -634,7 +634,7 @@ if (is_android) {
+@@ -634,8 +634,8 @@ if (is_android) {
        content_shell_version,
      ]
    }
+ 
 -  mac_app_bundle("content_shell") {
 +  mac_app_bundle("alacrium_shell") {
      testonly = true

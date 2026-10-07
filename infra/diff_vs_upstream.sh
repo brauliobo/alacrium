@@ -92,7 +92,6 @@ check_patch_group "$CR_SRC_DIR" \
   other/disable-privacy-sandbox.patch \
   other/enable-vaapi-nvidia-default.patch \
   other/history-query-dedupe.patch \
-  other/history-redirect-chain-cache.patch \
   other/history-sync-redirect-chain-limit.patch \
   other/history-delete-directive-startup-guard.patch \
   other/google-api-keys-defaults.patch \

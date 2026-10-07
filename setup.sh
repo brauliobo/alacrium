@@ -150,9 +150,6 @@ patchAlacrium () {
 	apply_patch_once "${CR_SRC_DIR}" "${ALACRIUM_ROOT}/other/disable-privacy-sandbox.patch" "Disable Privacy Sandbox patch" &&
 	apply_patch_once "${CR_SRC_DIR}" "${ALACRIUM_ROOT}/other/enable-vaapi-nvidia-default.patch" "Enable NVIDIA VA-API by default patch" &&
 	apply_patch_once "${CR_SRC_DIR}" "${ALACRIUM_ROOT}/other/history-query-dedupe.patch" "History duplicate query patch" &&
-	apply_patch_once "${CR_SRC_DIR}" "${ALACRIUM_ROOT}/other/history-redirect-chain-cache.patch" "History redirect chain cache patch" \
-		"components/history/core/browser/history_backend.cc" \
-		"std::map<VisitID, VisitRow>* redirect_chain_start_cache" &&
 	apply_patch_once "${CR_SRC_DIR}" "${ALACRIUM_ROOT}/other/history-sync-redirect-chain-limit.patch" "History sync redirect chain limit patch" &&
 	apply_patch_once "${CR_SRC_DIR}" "${ALACRIUM_ROOT}/other/history-delete-directive-startup-guard.patch" "History delete directive startup guard patch" &&
 	apply_patch_once "${CR_SRC_DIR}" "${ALACRIUM_ROOT}/other/google-api-keys-defaults.patch" "Google API key defaults patch" &&
