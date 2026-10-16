@@ -37,7 +37,7 @@ if [ -d "$HOME/depot_tools" ]; then
   export PATH="$HOME/depot_tools:$PATH"
 fi
 
-ALACRIUM_VER="155.0.8059.39"
+ALACRIUM_VER="155.0.8059.84"
 
 export ALACRIUM_VER &&
 
@@ -54,19 +54,23 @@ if ! git rev-parse -q --verify "refs/tags/${ALACRIUM_VER}" >/dev/null; then
     "refs/tags/${ALACRIUM_VER}:refs/tags/${ALACRIUM_VER}"
 fi
 
-git checkout -f "tags/${ALACRIUM_VER}"
+# Preserve generated overlays before switching upstream revisions. Dependency
+# checkouts need the same treatment because setup.sh patches FFmpeg as well.
+PRESERVATION_LOG="${XDG_STATE_HOME:-$HOME/.local/state}/alacrium/checkout-stashes.tsv"
+mkdir -p "$(dirname "$PRESERVATION_LOG")"
+gclient recurse --no-progress -j1 --scm git \
+  bash "${ALACRIUM_ROOT}/infra/preserve_checkout.sh" "$PRESERVATION_LOG"
+bash "${ALACRIUM_ROOT}/infra/preserve_checkout.sh" "$PRESERVATION_LOG"
+git checkout "tags/${ALACRIUM_VER}"
 
 # M147+ ships JPEG XL natively; no separate JPEG XL DEPS overlay is required.
 
 cd "${CR_SRC_DIR}"
 
-git clean -ffd
-git clean -ffd
 
 printf "${GRE}gclient sync${c0}\n"  &&
-gclient sync --with_branch_heads --with_tags --force --reset --nohooks --delete_unversioned_trees &&
+gclient sync --with_branch_heads --with_tags --nohooks &&
 
-git clean -ffd &&
 
 printf "${GRE}gclient runhooks${c0}\n" &&
 gclient runhooks &&
