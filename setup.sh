@@ -152,6 +152,7 @@ patchAlacrium () {
 	apply_patch_once "${CR_SRC_DIR}" "${ALACRIUM_ROOT}/other/history-query-dedupe.patch" "History duplicate query patch" &&
 	apply_patch_once "${CR_SRC_DIR}" "${ALACRIUM_ROOT}/other/history-sync-redirect-chain-limit.patch" "History sync redirect chain limit patch" &&
 	apply_patch_once "${CR_SRC_DIR}" "${ALACRIUM_ROOT}/other/history-delete-directive-startup-guard.patch" "History delete directive startup guard patch" &&
+	apply_patch_once "${CR_SRC_DIR}" "${ALACRIUM_ROOT}/other/history-skip-self-refresh.patch" "History skip self-refresh visits patch" &&
 	apply_patch_once "${CR_SRC_DIR}" "${ALACRIUM_ROOT}/other/google-api-keys-defaults.patch" "Google API key defaults patch" &&
 	# Kept because it is related to Alacrium custom flags (not upstreamable).
 	apply_patch_once "${CR_SRC_DIR}" "${ALACRIUM_ROOT}/other/fix_disable_aero_crash.patch" "Disable aero crash fix"
