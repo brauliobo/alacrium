@@ -38,6 +38,8 @@ infra/tools/repair_history_redirect_chains.py --apply ~/.config/alacrium/Default
 The first command is a dry run. `--apply` creates a timestamped backup before
 marking the affected visits as redirect-chain starts; it does not delete visits.
 
+Packages install the same tool as `alacrium-history-repair`.
+
 ## NVIDIA VP9 Decode Stress
 
 Stress Chromium's VP9 hardware decode path while collecting NVIDIA telemetry:

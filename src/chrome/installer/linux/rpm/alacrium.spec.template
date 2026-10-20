@@ -103,6 +103,7 @@ rm -rf "$RPM_BUILD_ROOT"
 # Extra Alacrium files
 /usr/bin/alacrium-shell
 /usr/bin/pak
+/usr/bin/alacrium-history-repair
 /usr/share/appdata/@@PACKAGE@@.appdata.xml
 /usr/share/applications/@@PACKAGE@@.desktop
 /usr/share/applications/@@RDN_DESKTOP@@.desktop
