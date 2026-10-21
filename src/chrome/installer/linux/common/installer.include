@@ -459,7 +459,7 @@ NoDisplay=true" "${STAGEDIR}/usr/share/applications/${RDN_DESKTOP}.desktop"
       local expected_perms=755
     elif [ "${base_name}" = "chrome-sandbox" ]; then
       local expected_perms=4755
-    elif [[ "${file_type}" = *"shell script"* ]]; then
+    elif [[ "${file_type}" = *"shell script"* || "${file_type}" = *"Python script"* ]]; then
       local expected_perms=755
     elif [[ "${file_type}" = ELF* ]]; then
       if [[ "${base_name}" = *".so" || "${base_name}" = *".so."[[:digit:]]* ]]; then
