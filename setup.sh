@@ -119,7 +119,7 @@ copy_optional_overlay src/v8 &&
 
 cp -r -v alacrium_shell/. ${CR_SRC_DIR}/out/alacrium/ &&
 cp -v logos/alacrium.svg ${CR_SRC_DIR}/out/alacrium/alacrium.svg &&
-install -m 755 -v infra/tools/repair_history_redirect_chains.py ${CR_SRC_DIR}/out/alacrium/alacrium-history-repair &&
+install -m 755 -v infra/tools/repair_history_redirect_chains.py ${CR_SRC_DIR}/out/alacrium/ &&
 cp -r -v pak_src/binaries/pak ${CR_SRC_DIR}/out/alacrium/ &&
 cp -r -v pak_src/binaries/pak-win/. ${CR_SRC_DIR}/out/alacrium/ &&
 :

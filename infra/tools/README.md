@@ -38,7 +38,16 @@ infra/tools/repair_history_redirect_chains.py --apply ~/.config/alacrium/Default
 The first command is a dry run. `--apply` creates a timestamped backup before
 marking the affected visits as redirect-chain starts; it does not delete visits.
 
-Packages install the same tool as `alacrium-history-repair`.
+Packages install the same tool, outside `PATH`, as
+`/opt/alacrium-browser/tools/repair_history_redirect_chains.py`.
+
+To also delete the self-refresh visits (keeping the newest visit of each day per
+URL) and shrink the database, add `--delete-self-refresh`; it also takes a
+backup and is a dry run without `--apply`:
+
+```bash
+infra/tools/repair_history_redirect_chains.py --delete-self-refresh --apply ~/.config/alacrium/Default/History
+```
 
 ## NVIDIA VP9 Decode Stress
 
