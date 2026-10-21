@@ -1534,22 +1534,55 @@ config("clang_revision") {
 
     if (toolchain_has_rust && _perform_consistency_checks &&
         !rust_force_head_revision) {
-      # Ensure that the synced rust version matches what's in git.
-      _rust_revision_lines =
-          filter_include(read_file("//tools/rust/update_rust.py", "list lines"),
-                         [ "RUST_*REVISION = *" ])
-      _py_revision =
-          string_replace(_rust_revision_lines[0], "RUST_REVISION = '", "")
-      _py_revision = string_replace(_py_revision, "'", "")
-      _py_subrevision =
-          string_replace(_rust_revision_lines[1], "RUST_SUB_REVISION = ", "")
-      _expected_rust_revision = "$_py_revision-$_py_subrevision"
+      # Ensure that synced rust, crubit, and bindgen versions match what's in
+      # git.
+      _rust_update_lines =
+          read_file("//tools/rust/update_rust.py", "list lines")
+      _version_lines =
+          read_file("//third_party/rust-toolchain/VERSION", "list lines")
 
-      # Ensure the rust version matches the clang version.
-      assert(
-          filter_include([ rustc_revision ],
-                         [ "*-$_expected_rust_revision-*" ]) != [],
-          "rustc_revision=\"$rustc_revision\" but update_rust.py expected \"$_expected_rust_revision\". Run \"gclient sync\"?")
+      # The rust revision combines two lines of the file, so we need to do
+      # some preprocessing to combine them.
+      _lines = filter_include(_rust_update_lines, [ "RUST_*REVISION = *" ])
+      _rust_rev =
+          string_replace(string_replace(_lines[0], "RUST_REVISION = '", ""),
+                         "'",
+                         "")
+      _rust_subrev = string_replace(_lines[1], "RUST_SUB_REVISION = ", "")
+
+      _tools = [
+        {
+          name = "rustc"
+          expected_pattern = "rustc *$_rust_rev-$_rust_subrev-*"
+        },
+        {
+          name = "crubit"
+          update_variable = "CRUBIT_REVISION"
+        },
+        {
+          name = "bindgen"
+          update_variable = "BINDGEN_REVISION"
+        },
+      ]
+
+      foreach(_tool, _tools) {
+        if (defined(_tool.expected_pattern)) {
+          _expected = _tool.expected_pattern
+        } else {
+          _lines = []
+          _lines = filter_include(_rust_update_lines,
+                                  [ "${_tool.update_variable} = *" ])
+          _expected =
+              string_replace(string_replace(_lines[0],
+                                            "${_tool.update_variable} = '",
+                                            "${_tool.name}: "),
+                             "'",
+                             "")
+        }
+        assert(
+            filter_include(_version_lines, [ _expected ]) != [],
+            "${_tool.name} revision in //third_party/rust-toolchain/VERSION does not match update_rust.py. Run \"gclient sync\"?")
+      }
     }
 
     # This is here so that all files get recompiled after a clang roll and
@@ -1607,6 +1640,18 @@ ubsan_hardening("c_array_bounds") {
 # `NOTREACHED()` at the end of such functions.
 ubsan_hardening("return") {
   sanitizer = "return"
+}
+
+# Enable `-fsanitize=unreachable` to crash deterministically if control
+# flow hits an unreachable point.
+ubsan_hardening("unreachable") {
+  sanitizer = "unreachable"
+
+  # TODO(crbug.com/501143596):
+  # 1.  `fuchsia-binary-size` tells us that web_engine and
+  #     chrome_fuchsia both grow 32768 bytes (10x that, uncompressed).
+  # 2.  `headless_shell_wpt_tests` fail on `mac-rel`.
+  condition = is_debug || !(is_mac || is_fuchsia)
 }
 
 config("rustc_revision") {
@@ -2050,20 +2095,15 @@ config("default_warnings") {
     ldflags += [ "-Wl,-no_warn_duplicate_libraries" ]
   }
 
-  configs = [ ":default_clippy_lints" ]
+  if (enable_rust_clippy) {
+    configs = [ ":default_clippy_lints" ]
+  }
 }
 
 # default_clippy_lints --------------------------------------------------------
 
 config("default_clippy_lints") {
   rustflags = [
-    # NOTE: Change `cr_clippy_revision` when 1) enabling new Clippy warnings or
-    # 2) enabling Clippy on new platforms/bots.  This is quite similar to
-    # `config("rustc_revision")` - a custom `--cfg` flag is used to force
-    # rebuilding of all `.rs` files (which as a side-effect should also trigger
-    # a Clippy check if `enable_rust_clippy = true`).
-    "--cfg=cr_clippy_revision=\"2026-07-20\"",
-
     # Treat all default Clippy lints as warnings.
     # See also `config("treat_warnings_as_errors")`.
     "-Wclippy::all",
@@ -2077,6 +2117,9 @@ config("default_clippy_lints") {
 
     # TODO(crbug.com/534628766): Fix and re-enable.
     "-Aclippy::chunks_exact_to_as_chunks",
+
+    # TODO(crbug.com/556789085): Fix and re-enable.
+    "-Aclippy::needless_range_loop",
   ]
 }
 

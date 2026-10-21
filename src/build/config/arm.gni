@@ -119,6 +119,9 @@ if (current_cpu == "arm" || v8_current_cpu == "arm") {
   }
 } else if (current_cpu == "arm64" || v8_current_cpu == "arm64" ||
            current_cpu == "arm64e" || v8_current_cpu == "arm64e") {
+  # arm64 supports only "hard".
+  arm_float_abi = "hard"
+
   declare_args() {
     # Enables the new Armv8 branch protection features. Valid strings are:
     # - "pac": Enables Pointer Authentication Code (PAC, featured in Armv8.3)
@@ -129,9 +132,6 @@ if (current_cpu == "arm" || v8_current_cpu == "arm") {
     # Version of the ARM processor when compiling on ARM. Ignored on non-ARM
     # platforms.
     arm_version = 8
-    
-    # arm64 supports only "hard".
-    arm_float_abi = "hard"
 
     # The ARM64 architecture. This will be a string like "armv8-a" or "armv8.5-a.
     # An empty string means to use the default for the arm_version.
