@@ -33,11 +33,23 @@ xattr -csr "${STAGE}/Alacrium.app" &&
 # Sign binary
 codesign --force --deep --sign - "${STAGE}/Alacrium.app" &&
 codesign --verify --deep --strict "${STAGE}/Alacrium.app" &&
-ln -s /Applications "${STAGE}/Applications" &&
 
-# Build dmg package
-hdiutil create -volname Alacrium -srcfolder "${STAGE}" -fs HFS+ -format UDBZ -ov out/alacrium/Alacrium_MacOS.dmg &&
-rm -rf "${STAGE}" &&
+# Drag-to-install window: Applications link and background
+ln -s /Applications "${STAGE}/Applications" &&
+mkdir "${STAGE}/.background" &&
+cp "${ALACRIUM_ROOT}/infra/dmg/background.png" "${STAGE}/.background/background.png" &&
+
+# Build dmg package, laying out the window on a writable image first
+RW_DMG="${STAGE}.rw.dmg" &&
+hdiutil create -volname Alacrium -srcfolder "${STAGE}" -fs HFS+ -format UDRW -ov "${RW_DMG}" &&
+hdiutil detach /Volumes/Alacrium -quiet 2>/dev/null;
+hdiutil attach "${RW_DMG}" -noautoopen -quiet &&
+osascript "${ALACRIUM_ROOT}/infra/dmg/layout.applescript" Alacrium &&
+sync &&
+hdiutil detach /Volumes/Alacrium -quiet &&
+rm -f out/alacrium/Alacrium_MacOS.dmg &&
+hdiutil convert "${RW_DMG}" -format UDBZ -o out/alacrium/Alacrium_MacOS.dmg &&
+rm -rf "${STAGE}" "${RW_DMG}" &&
 
 cd "${ALACRIUM_ROOT}" &&
 cat logos/apple_ascii_art.txt &&
