@@ -96,6 +96,13 @@ for output in \
   magick "${ico_inputs[@]}" "$output"
 done
 
+render 22 "$root/infra/APPIMAGE/files/product_logo_22.png"
+render 512 "$root/infra/APPIMAGE/files/product_logo_512.png"
+
+for size in 16 24 32 48 64 128 256; do
+  render "$size" "$root/infra/DEBUG/icons/icon_${size}.png"
+done
+
 # Slot PNGs consumed by infra/build_mac_assets.sh (Assets.car) and logos/NEW/mac/gen/app/build_icns.sh
 for spec in 16x16:16 16x16@2x:32 32x32:32 32x32@2x:64 64x64:64 64x64@2x:128 128x128:128 128x128@2x:256 \
   256x256:256 256x256@2x:512 512x512:512 512x512@2x:1024; do
