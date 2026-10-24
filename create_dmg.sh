@@ -25,16 +25,21 @@ printf "${CYA}\n" &&
 
 cd ${CR_SRC_DIR} &&
 
-# Fix file attr
-xattr -csr out/alacrium/Alacrium.app &&
+# Stage on the local disk: pkg-dmg's rsync adds FinderInfo xattrs that invalidate the signature
+STAGE="$(mktemp -d)" &&
+ditto --noextattr --norsrc out/alacrium/Alacrium.app "${STAGE}/Alacrium.app" &&
+xattr -csr "${STAGE}/Alacrium.app" &&
 
 # Sign binary
-codesign --force --deep --sign - out/alacrium/Alacrium.app &&
+codesign --force --deep --sign - "${STAGE}/Alacrium.app" &&
+codesign --verify --deep --strict "${STAGE}/Alacrium.app" &&
+ln -s /Applications "${STAGE}/Applications" &&
 
 # Build dmg package
-chrome/installer/mac/pkg-dmg --sourcefile --source out/alacrium/Alacrium.app --target "out/alacrium/Alacrium_MacOS.dmg" --volname Alacrium --symlink /Applications:/Applications --format UDBZ --verbosity 2 &&
+hdiutil create -volname Alacrium -srcfolder "${STAGE}" -fs HFS+ -format UDBZ -ov out/alacrium/Alacrium_MacOS.dmg &&
+rm -rf "${STAGE}" &&
 
-cd "$(dirname "$0")" &&
+cd "${ALACRIUM_ROOT}" &&
 cat logos/apple_ascii_art.txt &&
 
 printf "${GRE}.DMG Build Completed. ${YEL}Installer at \'//chromium/src/out/alacrium/Alacrium_MacOS.dmg\'\n" &&
