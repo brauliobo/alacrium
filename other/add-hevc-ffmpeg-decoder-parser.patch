@@ -2507,17 +2507,20 @@ index 145ceba51b..67ffd65aad 100644
      "libavcodec/x86/autorename_libavcodec_x86_aacpsdsp_init.c",
      "libavcodec/x86/autorename_libavcodec_x86_h264_intrapred_init.c",
      "libavcodec/x86/autorename_libavcodec_x86_h264dsp_init.c",
-@@ -452,6 +487,18 @@ if (use_linux_config && current_cpu == "riscv64" &&
+@@ -452,6 +487,21 @@ if (use_linux_config && current_cpu == "riscv64" &&
  
  if ((current_cpu == "arm64" || current_cpu == "arm64e") &&
      ffmpeg_branding == "Chrome") {
 +  ffmpeg_c_sources += [
 +    "libavcodec/aarch64/hevcdsp_init_aarch64.c",
++    "libavcodec/aarch64/hevcpred_init_aarch64.c",
 +  ]
 +
 +  ffmpeg_gas_sources += [
 +    "libavcodec/aarch64/autorename_libavcodec_aarch64_hevcdsp_idct_neon.S",
 +    "libavcodec/aarch64/hevcdsp_deblock_neon.S",
++    "libavcodec/aarch64/hevcdsp_dequant_neon.S",
++    "libavcodec/aarch64/hevcpred_neon.S",
 +    "libavcodec/aarch64/h26x/epel_neon.S",
 +    "libavcodec/aarch64/h26x/qpel_neon.S",
 +    "libavcodec/aarch64/h26x/sao_neon.S",
@@ -2526,7 +2529,7 @@ index 145ceba51b..67ffd65aad 100644
    ffmpeg_c_sources += [
      "libavcodec/aarch64/aacpsdsp_init_aarch64.c",
      "libavcodec/aarch64/h264chroma_init_aarch64.c",
-@@ -476,6 +523,8 @@ if ((current_cpu == "arm64" || current_cpu == "arm64e") &&
+@@ -476,6 +526,8 @@ if ((current_cpu == "arm64" || current_cpu == "arm64e") &&
  
  if (use_linux_config && current_cpu == "arm" && ffmpeg_branding == "Chrome") {
    ffmpeg_c_sources += [
@@ -2535,7 +2538,7 @@ index 145ceba51b..67ffd65aad 100644
      "libavcodec/arm/h264chroma_init_arm.c",
      "libavcodec/arm/h264dsp_init_arm.c",
      "libavcodec/arm/h264pred_init_arm.c",
-@@ -484,6 +533,10 @@ if (use_linux_config && current_cpu == "arm" && ffmpeg_branding == "Chrome") {
+@@ -484,6 +536,10 @@ if (use_linux_config && current_cpu == "arm" && ffmpeg_branding == "Chrome") {
      "libavcodec/arm/videodsp_init_armv5te.c",
    ]
    ffmpeg_gas_sources += [
