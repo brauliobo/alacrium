@@ -2608,9 +2608,9 @@ config("alacrium_simd_optimization") {
     if (is_win) {
       cflags += [ "-march=armv8-a+simd", ]
     } else if (is_mac) {
-      # Alex313031 TODO: Possibly use -mcpu here?
-      cflags += [ "-march=armv8.3-a+simd+crypto", "-mtune=apple-m1", ]
-      ldflags += [ "-march=armv8.3-a+simd+crypto", "-mtune=apple-m1", ]
+      # No global -march: it would override the per-target -march flags (e.g. libvpx dotprod/i8mm/sve)
+      cflags += [ "-mtune=apple-m1", ]
+      ldflags += [ "-mtune=apple-m1", ]
     } else {
       # Linux and ChromiumOS and Android
       cflags += [ "-march=armv8-a+simd", ]

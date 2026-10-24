@@ -1,7 +1,8 @@
 diff --git a/content/shell/BUILD.gn b/content/shell/BUILD.gn
 --- a/content/shell/BUILD.gn
 +++ b/content/shell/BUILD.gn
-@@ -46,7 +46,7 @@ shell_use_toolkit_views = toolkit_views && !is_castos
+@@ -46,8 +46,8 @@ if (is_android) {
+ shell_use_toolkit_views = toolkit_views && !is_castos
  
  declare_args() {
 -  content_shell_product_name = "Content Shell"
@@ -11,7 +12,7 @@ diff --git a/content/shell/BUILD.gn b/content/shell/BUILD.gn
    content_shell_major_version = "999"
  }
  
-@@ -620,7 +620,7 @@ repack("pak") {
+@@ -618,7 +618,7 @@ repack("pak") {
  }
  
  if (is_android) {
@@ -20,17 +21,22 @@ diff --git a/content/shell/BUILD.gn b/content/shell/BUILD.gn
      testonly = true
      deps = [ "//content/shell/android:content_shell_apk" ]
    }
-@@ -634,8 +634,8 @@ if (is_android) {
-       content_shell_version,
+@@ -633,7 +633,13 @@ if (is_android) {
      ]
    }
  
 -  mac_app_bundle("content_shell") {
++  # Upstream tests still depend on the //content/shell:content_shell label.
++  group("content_shell") {
++    testonly = true
++    deps = [ ":alacrium_shell" ]
++  }
++
 +  mac_app_bundle("alacrium_shell") {
      testonly = true
      output_name = content_shell_product_name
      sources = [ "app/shell_main_mac.cc" ]
-@@ -752,8 +752,9 @@ if (is_android) {
+@@ -754,8 +760,9 @@ if (is_android) {
      }
    }
  } else {
@@ -41,7 +47,7 @@ diff --git a/content/shell/BUILD.gn b/content/shell/BUILD.gn
  
      sources = [ "app/shell_main.cc" ]
  
-@@ -814,7 +815,7 @@ if (is_android) {
+@@ -816,7 +823,7 @@ if (is_android) {
      fuchsia_component("content_shell_component") {
        testonly = true
        manifest = "fuchsia/content_shell.cml"
@@ -50,7 +56,7 @@ diff --git a/content/shell/BUILD.gn b/content/shell/BUILD.gn
        visibility = [ ":*" ]
      }
  
-@@ -1106,7 +1107,7 @@ if (is_android) {
+@@ -1113,7 +1120,7 @@ if (is_android) {
        "//content/test/data/media/",
      ]
      data_deps = [
@@ -59,7 +65,7 @@ diff --git a/content/shell/BUILD.gn b/content/shell/BUILD.gn
        "//build/android:devil_chromium_py",
        "//build/android:test_runner_py",
        "//testing:test_scripts_shared",
-@@ -1118,7 +1119,7 @@ if (is_android) {
+@@ -1125,7 +1132,7 @@ if (is_android) {
  group("content_shell_crash_test") {
    testonly = true
    data_deps = [

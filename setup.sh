@@ -50,6 +50,10 @@ prepare_ffmpeg_hevc_autorename_sources () {
 	cp -v "${hevc_dir}/cabac.c" "${hevc_dir}/autorename_libavcodec_hevc_cabac.c"
 	cp -v "${hevc_dir}/parse.c" "${hevc_dir}/autorename_libavcodec_hevc_parse.c"
 	cp -v "${hevc_dir}/parser.c" "${hevc_dir}/autorename_libavcodec_hevc_parser.c"
+
+	# arm64 NEON wrapper listed in ffmpeg_generated.gni by the HEVC patch
+	printf '#include "../../third_party/ffmpeg/libavcodec/aarch64/hevcdsp_idct_neon.S"\n' \
+		> "${CR_SRC_DIR}/third_party/ffmpeg/libavcodec/aarch64/autorename_libavcodec_aarch64_hevcdsp_idct_neon.S"
 }
 
 # --help
@@ -107,7 +111,7 @@ cp -r -v src/components ${CR_SRC_DIR}/ &&
 cp -r -v src/content ${CR_SRC_DIR}/ &&
 copy_optional_overlay src/extensions &&
 copy_optional_overlay src/google_apis &&
-cp -r -v src/media ${CR_SRC_DIR}/ &&
+copy_optional_overlay src/media &&
 cp -r -v src/net ${CR_SRC_DIR}/ &&
 copy_optional_overlay src/ppapi &&
 cp -r -v src/sandbox ${CR_SRC_DIR}/ &&
@@ -197,9 +201,11 @@ cp -v infra/alacrium_ver ${CR_SRC_DIR}/out/alacrium/ &&
 copyMacOS () {
 	printf "\n" &&
 	printf "${YEL}Copying files for MacOS...${c0}\n" &&
-	cp -v arm/mac_arm.gni ${CR_SRC_DIR}/build/config/arm.gni &&
+	# Use the rebased src/build/config/arm.gni; arm/mac_arm.gni predates M156 and imports removed files
+	# arm/third_party only carries Linux/Raspberry Pi ARM overrides; macOS uses upstream's build files
 	cp -v other/Mac/alacrium_version.txt ${CR_SRC_DIR}/ui/webui/resources/text/ &&
-	cp -r -v arm/third_party/* ${CR_SRC_DIR}/third_party/ &&
+	# src/chrome/BUILD.gn only customizes Windows/Linux output names and lacks M156's macOS helper app targets
+	git -C ${CR_SRC_DIR} checkout -- chrome/BUILD.gn &&
 	cd ${CR_SRC_DIR} &&
 	python3 tools/update_pgo_profiles.py --target=mac update --gs-url-base=chromium-optimization-profiles/pgo_profiles &&
 	python3 tools/update_pgo_profiles.py --target=mac-arm update --gs-url-base=chromium-optimization-profiles/pgo_profiles &&

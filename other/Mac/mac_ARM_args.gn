@@ -75,5 +75,6 @@ enable_rust = true
 enable_updater = false
 enable_update_notifications = false
 chrome_pgo_phase = 2
-pgo_data_path = "//out/alacrium/profile/speedometer3.profdata"
-# chrome-mac-arm-7204-1755550880-7bfb7c517a5052d092d56992f113cbf8effc9a4c-ab52d0be43c2a0ece2f12a52149a477c20b9c029.profdata
+pgo_data_path = "//chrome/build/pgo_profiles/" + read_file("//chrome/build/mac-arm.pgo.txt", "trim string")
+# siso's .__*.siso_tmp files fail to be created on NFS-backed output directories
+use_siso = false
