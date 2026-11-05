@@ -37,7 +37,7 @@ if [ -d "$HOME/depot_tools" ]; then
   export PATH="$HOME/depot_tools:$PATH"
 fi
 
-ALACRIUM_VER="156.0.8078.47"
+ALACRIUM_VER="157.0.8103.38"
 
 export ALACRIUM_VER &&
 
@@ -75,12 +75,11 @@ gclient sync --with_branch_heads --with_tags --nohooks &&
 printf "${GRE}gclient runhooks${c0}\n" &&
 gclient runhooks &&
 
-# Install sysroots (i.e. for ARM64)
+# Install the amd64 sysroot (the arm64 sysroot is not needed for x64 builds)
 if [ -n "${MSYSTEM:-}" ]; then
   printf "${GRE}Not Downloading Linux sysroot on Windows\n"
 else
-  build/linux/sysroot_scripts/install-sysroot.py --arch=amd64 &&
-  build/linux/sysroot_scripts/install-sysroot.py --arch=arm64
+  build/linux/sysroot_scripts/install-sysroot.py --arch=amd64
 fi
 
 printf "\n"
@@ -104,7 +103,10 @@ printf "\n" &&
 if [ -n "${MSYSTEM:-}" ]; then
   python3 v8/tools/builtins-pgo/download_profiles.py --depot-tools=/c/src/depot_tools --force download
 else
-  python3 v8/tools/builtins-pgo/download_profiles.py --depot-tools=$HOME/depot_tools --force download
+  # Resolve depot_tools from the gclient on PATH; fall back to ~/depot_tools.
+  DEPOT_TOOLS_DIR="$(dirname "$(readlink -f "$(command -v gclient)")" 2>/dev/null || true)"
+  [ -f "${DEPOT_TOOLS_DIR}/download_from_google_storage.py" ] || DEPOT_TOOLS_DIR="$HOME/depot_tools"
+  python3 v8/tools/builtins-pgo/download_profiles.py --depot-tools="${DEPOT_TOOLS_DIR}" --force download
 fi
 printf "\n" &&
 

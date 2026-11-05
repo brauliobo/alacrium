@@ -37,7 +37,7 @@ if [ -d "$HOME/depot_tools" ]; then
   export PATH="$HOME/depot_tools:$PATH"
 fi
 
-CR_VER="156.0.8078.47"
+CR_VER="157.0.8103.38"
 
 export CR_VER &&
 
@@ -67,12 +67,11 @@ git clean -ffd &&
 printf "${GRE}gclient runhooks${c0}\n" &&
 gclient runhooks &&
 
-# Install sysroots (i.e. for ARM64)
+# Install the amd64 sysroot (the arm64 sysroot is not needed for x64 builds)
 if [ -n "${MSYSTEM:-}" ]; then
   printf "${GRE}Not Downloading Linux sysroot on Windows\n"
 else
-  build/linux/sysroot_scripts/install-sysroot.py --arch=amd64 &&
-  build/linux/sysroot_scripts/install-sysroot.py --arch=arm64
+  build/linux/sysroot_scripts/install-sysroot.py --arch=amd64
 fi
 
 printf "\n"

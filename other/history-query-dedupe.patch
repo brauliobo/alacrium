@@ -1,32 +1,42 @@
 diff --git a/components/history/core/browser/visit_database.cc b/components/history/core/browser/visit_database.cc
-index 73bd519289c2d..6e55f50ae16b8 100644
+index a85535de9a90..1fad4d883356 100644
 --- a/components/history/core/browser/visit_database.cc
 +++ b/components/history/core/browser/visit_database.cc
-@@ -823,6 +823,145 @@ GetAllAppIdsResult VisitDatabase::GetAllAppIds() {
+@@ -847,6 +847,155 @@ GetAllAppIdsResult VisitDatabase::GetAllAppIds() {
  bool VisitDatabase::GetVisibleVisitsInRange(const QueryOptions& options,
                                              VisitVector* visits) {
    visits->clear();
 +
-+// TODO(crbug.com/457641486) Clean up preprocessor statements once feature is
-+// rolled out.
++  // The fast path below only serves the default user-only query. Queries that
++  // include actor visits use the generic path, which also tracks actor visits
++  // separately when deduplicating.
 +#if !BUILDFLAG(IS_IOS)
-+  const bool actor_visit_filtering_enabled =
-+      history::IsBrowsingHistoryActorIntegrationM3Enabled();
++  const bool user_visits_only =
++      options.include_user_visits && !options.include_actor_visits;
 +#else
-+  const bool actor_visit_filtering_enabled = false;
++  const bool user_visits_only = true;
 +#endif
 +
 +  // For the common duplicate-removal queries, let SQLite reduce each duplicate
 +  // group to the first matching visit before returning rows to C++. Chromium's
 +  // bundled SQLite omits window functions, so use grouped aggregates here.
 +  const bool rank_duplicate_visits_in_sql =
-+      !actor_visit_filtering_enabled &&
++      user_visits_only &&
 +      (options.duplicate_policy == QueryOptions::REMOVE_ALL_DUPLICATES ||
 +       options.duplicate_policy == QueryOptions::REMOVE_DUPLICATES_PER_DAY);
 +  if (rank_duplicate_visits_in_sql) {
 +    std::string joins;
 +    std::vector<std::string> where_clauses;
 +    std::vector<int64_t> binding_values;
++
++#if !BUILDFLAG(IS_IOS)
++    // Same as PrepareVisibleVisitsQuery(): user-only queries exclude actor
++    // visits. The constant is inlined so the bind order below is unchanged.
++    joins += " LEFT JOIN visit_source ON visits.id = visit_source.id";
++    where_clauses.push_back(
++        "(visit_source.source IS NULL OR visit_source.source != " +
++        base::NumberToString(static_cast<int>(SOURCE_ACTOR)) + ")");
++#endif
 +
 +    if (options.policy_for_404_visits == VisitQuery404sPolicy::kExclude404s) {
 +      joins +=
