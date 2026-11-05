@@ -13,7 +13,18 @@ release_api="https://chromiumdash.appspot.com/fetch_releases?channel=Stable&plat
 
 mkdir -p "$state_dir"
 
+# Log from inside the script so a missing state dir can't break a cron redirect.
+if [ "${ALACRIUM_UPDATER_LOG:-1}" = 1 ]; then
+  exec >> "${state_dir}/cron.log" 2>&1
+fi
+
 export PATH="/home/braulio/.local/bin:/home/braulio/bin:/usr/local/bin:/usr/bin:/bin"
+for depot_tools in "${DEPOT_TOOLS_DIR:-}" "$HOME/depot_tools" "$HOME/Projects/depot_tools"; do
+  if [ -n "$depot_tools" ] && [ -x "$depot_tools/gclient" ]; then
+    export PATH="$depot_tools:$PATH"
+    break
+  fi
+done
 export SSH_ASKPASS=/usr/bin/ksshaskpass
 export SSH_ASKPASS_REQUIRE=force
 export GIT_ASKPASS="${GIT_ASKPASS:-$SSH_ASKPASS}"

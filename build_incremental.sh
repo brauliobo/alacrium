@@ -39,9 +39,18 @@ if [[ ! -f "$CR_SRC_DIR/out/alacrium/build.ninja" ]]; then
   exit 2
 fi
 
-if [[ -d "$HOME/depot_tools" ]]; then
-  export PATH="$HOME/depot_tools:$PATH"
+if ! command -v autoninja >/dev/null; then
+  for depot_tools in "${DEPOT_TOOLS_DIR:-}" "$HOME/depot_tools" "$HOME/Projects/depot_tools"; do
+    if [[ -n "$depot_tools" && -x "$depot_tools/autoninja" ]]; then
+      export PATH="$depot_tools:$PATH"
+      break
+    fi
+  done
 fi
+command -v autoninja >/dev/null || {
+  echo "autoninja not found; set DEPOT_TOOLS_DIR or add depot_tools to PATH." >&2
+  exit 2
+}
 
 export NINJA_SUMMARIZE_BUILD=1
 export NINJA_STATUS="[%r processes, %f/%t @ %o/s | %e sec. ] "
