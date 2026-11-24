@@ -1,8 +1,7 @@
-# Copyright 2026 The Chromium Authors and Alex313031
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/features.gni")
 import("//sandbox/features.gni")
 import("//testing/test.gni")
 
@@ -98,6 +97,7 @@ source_set("sandbox_linux_unittests_sources") {
     ":sandbox_services_headers",
     "//base",
     "//base/test:test_support",
+    "//crypto",
     "//testing/gtest",
   ]
 
@@ -128,7 +128,7 @@ source_set("sandbox_linux_unittests_sources") {
       "integration_tests/bpf_dsl_seccomp_unittest.cc",
       "seccomp-bpf-helpers/baseline_policy_unittest.cc",
       "seccomp-bpf-helpers/sigsys_handlers_unittest.cc",
-      "seccomp-bpf-helpers/syscall_parameters_restrictions_unittests.cc",
+      "seccomp-bpf-helpers/syscall_parameters_restrictions_unittest.cc",
       "seccomp-bpf/bpf_tests_unittest.cc",
       "seccomp-bpf/sandbox_bpf_unittest.cc",
       "seccomp-bpf/syscall_unittest.cc",
@@ -168,6 +168,10 @@ source_set("sandbox_linux_unittests_sources") {
   if (use_seccomp_bpf && compile_syscall_broker) {
     sources += [ "integration_tests/seccomp_broker_process_unittest.cc" ]
   }
+
+  # TODO(crbug.com/40031409): Fix code that adds exit-time destructors and
+  # enable the diagnostic by removing this line.
+  configs += [ "//build/config/compiler:no_exit_time_destructors" ]
 }
 
 action("bpf_dsl_golden") {
@@ -195,6 +199,7 @@ action("bpf_dsl_golden") {
 }
 
 test("sandbox_linux_unittests") {
+  data_deps = [ "//testing/buildbot/filters:sandbox_linux_unittests_filters" ]
   deps = [
     ":sandbox_linux_unittests_sources",
     "//sandbox/policy:tests",
@@ -386,6 +391,7 @@ source_set("sandbox_services_headers") {
     "system_headers/linux_filter.h",
     "system_headers/linux_futex.h",
     "system_headers/linux_landlock.h",
+    "system_headers/linux_memfd.h",
     "system_headers/linux_prctl.h",
     "system_headers/linux_ptrace.h",
     "system_headers/linux_seccomp.h",

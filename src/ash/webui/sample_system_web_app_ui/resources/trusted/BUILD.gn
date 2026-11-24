@@ -1,4 +1,4 @@
-# Copyright 2026 The Chromium Authors and Alex313031
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -7,7 +7,7 @@ import("//tools/typescript/ts_library.gni")
 import("//ui/webui/resources/tools/build_webui.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 
-assert(is_chromeos_ash, "Sample System Web App is ash-chrome only")
+assert(is_chromeos, "Sample System Web App is ChromeOS only")
 
 build_webui("build") {
   grd_prefix = "ash_sample_system_web_app"
@@ -21,7 +21,7 @@ build_webui("build") {
     "timer.html",
   ]
 
-  non_web_component_files = [
+  ts_files = [
     "component_playground.ts",
     "inter_frame_communication.ts",
     "main.ts",
@@ -51,6 +51,7 @@ build_webui("build") {
         [ _mwc_mapping[0] + "|" + rebase_path(_mwc_mapping[1], target_gen_dir) ]
   }
 
+  webui_context_type = "trusted"
   grit_output_dir = "$root_gen_dir/ash/webui"
   extra_grdp_deps = [ ":build_worker_grdp" ]
   extra_grdp_files = [ "$target_gen_dir/worker_resources.grdp" ]

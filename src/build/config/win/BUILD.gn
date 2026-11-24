@@ -1,4 +1,4 @@
-# Copyright 2026 The Chromium Authors and Alex313031
+# Copyright 2013 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -132,7 +132,7 @@ config("compiler") {
     } else if (current_cpu == "x64") {
       cflags += [ "-msse3", "/clang:-msse3", ]
     }
-    
+
     if (current_cpu == "x86" || current_cpu == "x64") {
       if (is_official_build) {
         cflags += [
@@ -152,7 +152,6 @@ config("compiler") {
         cflags += [
           "-msse4.2",
           "/clang:-msse4.2",
-          # "/arch:SSE4.2",
         ]
       }
       if (use_avx) {
@@ -163,7 +162,6 @@ config("compiler") {
           "/clang:-mpclmul",
           "/clang:-maes",
           "/clang:-mavx",
-          # "/arch:AVX",
         ]
       }
       if (use_avx2) {
@@ -181,8 +179,6 @@ config("compiler") {
           "/clang:-mbmi",
           "/clang:-mbmi2",
           "/clang:-ffp-contract=fast",
-          # "/arch:AVX2",
-          # "/fp:fast",
         ]
       }
       if (use_avx512) {
@@ -228,6 +224,20 @@ config("compiler") {
 
   ldflags = []
 
+  if (use_clang_modules) {
+    # Work around LLVM builtin math lowerings under Clang modules emitting
+    # calls to `hypotf` on Windows, whereas UCRT only provides `_hypotf`.
+    # See http://b/525295309 and https://github.com/llvm/llvm-project/issues/209989.
+    if (current_cpu == "x86") {
+      # On x86 (32-bit cdecl), C symbols have a leading underscore:
+      # `hypotf` becomes `_hypotf`, and `_hypotf` becomes `__hypotf`.
+      ldflags += [ "/alternatename:_hypotf=__hypotf" ]
+    } else {
+      # On x64 and arm64, symbols are undecorated.
+      ldflags += [ "/alternatename:hypotf=_hypotf" ]
+    }
+  }
+
   if (use_lld) {
     # lld defaults to writing the current time in the pe/coff header.
     # For build reproducibility, pass an explicit timestamp. See
@@ -238,13 +248,16 @@ config("compiler") {
 
     # Don't look for libpaths in %LIB%, similar to /X in cflags above.
     ldflags += [ "/lldignoreenv" ]
+
+    # Enable /prefetch-inputs to improve linking performance.
+    ldflags += [ "/prefetch-inputs" ]
     if (is_official_build) {
       ldflags += [ "/OPT:lldlto=3", ]
     }
   }
 
-  # Some binaries create PDBs larger than 4 GiB. Increasing the PDB page size
-  # to 8 KiB allows 8 GiB PDBs. The larger page size also allows larger block maps
+  # Some binaries create PDBs larger than 4 GiB. Increasing the PDB page size to
+  # 8 KiB allows 8 GiB PDBs. The larger page size also allows larger block maps
   # which is a PDB limit that was hit in https://crbug.com/1406510. The page size
   # can easily be increased in the future to allow even larger PDBs or larger
   # block maps.
@@ -287,7 +300,7 @@ config("compiler") {
     # PDB file by about 5%) but does not otherwise alter the output binary. It
     # is enabled opportunistically for builds where it is not prohibited (not
     # supported when incrementally linking, or using /debug:fastlink).
-    # ldflags += [ "/PROFILE" ]
+    ldflags += [ "/PROFILE" ]
   }
 
   # arflags apply only to static_libraries. The normal linker configs are only
@@ -377,14 +390,12 @@ config("runtime_library") {
 # manually override this config for their compiles.
 config("winver") {
   defines = [
-    # 0x0A000010
-    "NTDDI_VERSION=NTDDI_WIN11_GE",
+    "NTDDI_VERSION=NTDDI_WIN11_BR",
 
     # We can't say `=_WIN32_WINNT_WIN10` here because some files do
     # `#if WINVER < 0x0600` without including windows.h before,
     # and then _WIN32_WINNT_WIN10 isn't yet known to be 0x0A00.
     "_WIN32_WINNT=0x0A00",
-    "_WIN64_WINNT=0x0A00",
     "WINVER=0x0A00",
   ]
 }
@@ -489,16 +500,14 @@ config("cfi_linker") {
 # unnecessarily, even if advapi32.dll itself is loaded.
 #
 # This config applies to chrome.exe, chrome.dll, chrome_elf.dll (& others).
-#
-# This config should also be used for any test binary whose goal is to run
-# tests with the full browser.
-config("delayloads") {
+config("delayloads_except_dbghelp") {
   ldflags = [
     "/DELAYLOAD:api-ms-win-core-synch-l1-2-0.dll",
     "/DELAYLOAD:api-ms-win-core-winrt-error-l1-1-0.dll",
     "/DELAYLOAD:api-ms-win-core-winrt-l1-1-0.dll",
     "/DELAYLOAD:api-ms-win-core-winrt-string-l1-1-0.dll",
     "/DELAYLOAD:advapi32.dll",
+    "/DELAYLOAD:bcrypt.dll",
     "/DELAYLOAD:bcryptprimitives.dll",
     "/DELAYLOAD:comctl32.dll",
     "/DELAYLOAD:comdlg32.dll",
@@ -507,6 +516,7 @@ config("delayloads") {
     "/DELAYLOAD:d3d11.dll",
     "/DELAYLOAD:d3d12.dll",
     "/DELAYLOAD:d3d9.dll",
+    "/DELAYLOAD:dhcpcsvc.dll",
     "/DELAYLOAD:dcomp.dll",
     "/DELAYLOAD:dwmapi.dll",
     "/DELAYLOAD:dxgi.dll",
@@ -517,32 +527,51 @@ config("delayloads") {
     "/DELAYLOAD:hid.dll",
     "/DELAYLOAD:imagehlp.dll",
     "/DELAYLOAD:imm32.dll",
+    "/DELAYLOAD:iphlpapi.dll",
     "/DELAYLOAD:mmdevapi.dll",
     "/DELAYLOAD:msi.dll",
     "/DELAYLOAD:netapi32.dll",
     "/DELAYLOAD:ncrypt.dll",
     "/DELAYLOAD:ole32.dll",
     "/DELAYLOAD:oleacc.dll",
+    "/DELAYLOAD:oleaut32.dll",
     "/DELAYLOAD:pdh.dll",
     "/DELAYLOAD:propsys.dll",
     "/DELAYLOAD:psapi.dll",
     "/DELAYLOAD:rpcrt4.dll",
     "/DELAYLOAD:rstrtmgr.dll",
+    "/DELAYLOAD:secur32.dll",
     "/DELAYLOAD:setupapi.dll",
     "/DELAYLOAD:shell32.dll",
     "/DELAYLOAD:shlwapi.dll",
     "/DELAYLOAD:uiautomationcore.dll",
     "/DELAYLOAD:urlmon.dll",
     "/DELAYLOAD:user32.dll",
+    "/DELAYLOAD:userenv.dll",
     "/DELAYLOAD:usp10.dll",
     "/DELAYLOAD:uxtheme.dll",
     "/DELAYLOAD:wer.dll",
     "/DELAYLOAD:wevtapi.dll",
+    "/DELAYLOAD:winhttp.dll",
     "/DELAYLOAD:wininet.dll",
+    "/DELAYLOAD:winspool.drv",
+    "/DELAYLOAD:wintrust.dll",
     "/DELAYLOAD:winusb.dll",
     "/DELAYLOAD:wsock32.dll",
     "/DELAYLOAD:wtsapi32.dll",
   ]
+}
+
+# Production binaries should use this config.
+config("delayloads") {
+  configs = [ ":delayloads_except_dbghelp" ]
+  ldflags = [ "/DELAYLOAD:dbghelp.dll" ]
+}
+
+# This config should also be used for any test binary whose goal is to run
+# tests with the full browser.
+config("delayloads_for_tests") {
+  configs = [ ":delayloads_except_dbghelp" ]
 }
 
 # This config (along with `:delayloads`) applies to chrome.exe & chrome_elf.dll.
@@ -550,17 +579,8 @@ config("delayloads") {
 config("delayloads_not_for_child_dll") {
   ldflags = [
     "/DELAYLOAD:crypt32.dll",
-    "/DELAYLOAD:dbghelp.dll",
-    "/DELAYLOAD:dhcpcsvc.dll",
     "/DELAYLOAD:dwrite.dll",
-    "/DELAYLOAD:iphlpapi.dll",
-    "/DELAYLOAD:oleaut32.dll",
-    "/DELAYLOAD:secur32.dll",
-    "/DELAYLOAD:userenv.dll",
-    "/DELAYLOAD:winhttp.dll",
     "/DELAYLOAD:winmm.dll",
-    "/DELAYLOAD:winspool.drv",
-    "/DELAYLOAD:wintrust.dll",
     "/DELAYLOAD:ws2_32.dll",
   ]
 }
@@ -568,7 +588,8 @@ config("delayloads_not_for_child_dll") {
 # ACLs are placed on the filesystem in order to allow chrome to launch
 # sandboxed processes in an app container when run from the out directory.
 group("maybe_set_appcontainer_acls") {
-  # Exclude setting ACLs when build is not happening on chromium, or with a different toolchain.
+  # Exclude setting ACLs when build is not happening on chromium, or with a
+  # different toolchain.
   if (build_with_chromium && current_cpu == target_cpu && host_os == "win") {
     deps = [ ":set_appcontainer_acls" ]
   }
@@ -582,8 +603,8 @@ if (build_with_chromium && current_cpu == target_cpu && host_os == "win") {
     outputs = [ stamp_file ]
 
     args = [
-      "--stamp=" + rebase_path(stamp_file, root_out_dir),
-      "--dir=" + rebase_path(root_out_dir, root_out_dir),
+      "--stamp=" + rebase_path(stamp_file, root_build_dir),
+      "--dir=" + rebase_path(root_out_dir, root_build_dir),
     ]
   }
 }
@@ -738,7 +759,7 @@ config("default_incremental_linking") {
       # lld.
       ldflags += [ "/OPT:NOREF" ]
 
-      # TODO(crbug.com/40267564): Mixing incremental and icf produces an error
+      # TODO(crbug.com/40267564): Mixing incrememntal and icf produces an error
       # in lld-link.
       ldflags += [ "/OPT:NOICF" ]
     }
@@ -774,4 +795,15 @@ config("lean_and_mean") {
 
 config("nominmax") {
   defines = [ "NOMINMAX" ]
+}
+
+# Wincrypt use symbol prefix ---------------------------------------------------
+
+# Some third party code might not compile with WINCRYPT_USE_SYMBOL_PREFIX so we
+# have to have a separate config for it. Remove this config from your target to
+# get the unprefixed versions of the wincrypt.h symbols. Note this will mean
+# your target cannot include wincrypt.h and OpenSSL/BoringSSL headers at the
+# same time.
+config("wincrypt_use_symbol_prefix") {
+  defines = [ "WINCRYPT_USE_SYMBOL_PREFIX" ]
 }

@@ -117,7 +117,7 @@ copy_optional_overlay src/ppapi &&
 cp -r -v src/sandbox ${CR_SRC_DIR}/ &&
 copy_optional_overlay src/services &&
 cp -r -v src/third_party ${CR_SRC_DIR}/ &&
-cp -r -v src/tools ${CR_SRC_DIR}/ &&
+copy_optional_overlay src/tools &&
 cp -r -v src/ui ${CR_SRC_DIR}/ &&
 copy_optional_overlay src/v8 &&
 

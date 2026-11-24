@@ -1511,7 +1511,7 @@ index 3ccc9c3fdc66a..20fba35991591 100644
 @@ -410,7 +411,8 @@ struct SameSizeAsDocumentLoader
    bool has_text_fragment_token;
    bool text_fragment_token_had_trusted_initiator;
-   std::optional<String> internal_scroll_to_text_fragment;
+   String internal_scroll_to_text_fragment;
    bool was_discarded;
 +  bool listing_ftp_directory;
    bool loading_main_document_from_mhtml_archive;

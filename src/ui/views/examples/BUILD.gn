@@ -1,10 +1,17 @@
-# Copyright 2026 The Chromium Authors and Alex313031
+# Copyright 2014 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
+import("//ui/gl/features.gni")
+
+if (is_mac) {
+  import("//build/apple/tweak_info_plist.gni")
+  import("//build/config/mac/rules.gni")
+  import("views_examples.gni")
+}
 
 component("views_examples_lib") {
   testonly = true
@@ -40,8 +47,12 @@ component("views_examples_lib") {
     "create_examples.h",
     "designer_example.cc",
     "designer_example.h",
+    "designer_property_editor.cc",
+    "designer_property_editor.h",
     "dialog_example.cc",
     "dialog_example.h",
+    "dialog_model_example.cc",
+    "dialog_model_example.h",
     "example_base.cc",
     "example_base.h",
     "example_combobox_model.cc",
@@ -56,8 +67,12 @@ component("views_examples_lib") {
     "fade_animation.h",
     "flex_layout_example.cc",
     "flex_layout_example.h",
+    "flex_layout_multiple_order_example.cc",
+    "flex_layout_multiple_order_example.h",
     "ink_drop_example.cc",
     "ink_drop_example.h",
+    "json_view_builder.cc",
+    "json_view_builder.h",
     "label_example.cc",
     "label_example.h",
     "layout_example_base.cc",
@@ -104,6 +119,8 @@ component("views_examples_lib") {
     "typography_example.h",
     "vector_example.cc",
     "vector_example.h",
+    "views_canvas_example.cc",
+    "views_canvas_example.h",
     "views_examples_export.h",
     "widget_example.cc",
     "widget_example.h",
@@ -124,9 +141,9 @@ component("views_examples_lib") {
     "//ui/actions",
     "//ui/base",
     "//ui/color",
+    "//ui/color:mixers",
     "//ui/events",
     "//ui/gfx",
-    "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/lottie",
     "//ui/menus",
@@ -134,12 +151,13 @@ component("views_examples_lib") {
     "//ui/native_theme",
     "//ui/resources",
     "//ui/resources:ui_test_pak",
+    "//ui/shell_dialogs",
     "//ui/strings:ui_strings",
     "//ui/views",
   ]
 
   public_deps = [
-    "//ui/base/mojom:mojom",
+    "//ui/base/mojom",
     "//ui/base/mojom:ui_base_types",
   ]
 
@@ -187,7 +205,7 @@ source_set("views_examples_proc") {
     ]
     deps += [
       "//ui/base:pixel_diff_test_support",
-      "//ui/native_theme:native_theme",
+      "//ui/native_theme",
       "//ui/snapshot",
     ]
   }
@@ -218,17 +236,184 @@ source_set("views_examples_proc") {
   }
 }
 
-executable("views_examples") {
+source_set("views_examples_main_header") {
   testonly = true
+  sources = [ "examples_main.h" ]
+  deps = [ "//base" ]
+}
 
+source_set("views_examples_main") {
+  testonly = true
   sources = [ "examples_main.cc" ]
-
   deps = [
+    ":views_examples_main_header",
     ":views_examples_proc",
     "//base",
     "//base/test:test_support",
-    "//build/win:default_exe_manifest",
   ]
+
+  if (is_mac) {
+    deps += [ ":views_examples_main_mac_support" ]
+  }
+}
+
+if (is_mac) {
+  source_set("views_examples_main_mac_support") {
+    testonly = true
+    sources = [
+      "examples_main_mac_support.h",
+      "examples_main_mac_support.mm",
+    ]
+    deps = [ "//base" ]
+  }
+
+  # views_examples_app_name, views_examples_version and
+  # views_examples_framework_name come from views_examples.gni.
+
+  tweak_info_plist("views_examples_plist") {
+    testonly = true
+    info_plist = "views_examples.plist"
+    args = [
+      "--scm=1",
+      "--version",
+      views_examples_version,
+    ]
+  }
+
+  mac_app_bundle("views_examples") {
+    testonly = true
+    output_name = views_examples_app_name
+    info_plist_target = ":views_examples_plist"
+
+    sources = [ "examples_main_mac.cc" ]
+
+    deps = [
+      ":views_examples_framework_bundle_data",
+      ":views_examples_main_header",
+      ":views_examples_resources_bundle_data",
+      "//base:compiler_specific",
+    ]
+
+    if (is_component_build) {
+      ldflags = [ "-Wl,-rpath,@executable_path/../Frameworks" ]
+    }
+  }
+
+  bundle_data("views_examples_resources_bundle_data") {
+    testonly = true
+    sources = [ "app.icns" ]
+    outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
+  }
+
+  bundle_data("views_examples_framework_bundle_data") {
+    testonly = true
+    sources = [ "$root_out_dir/$views_examples_framework_name.framework" ]
+    outputs = [ "{{bundle_contents_dir}}/Frameworks/{{source_file_part}}" ]
+    if (is_component_build) {
+      # In a component build, the framework is directly linked to the
+      # executable because dlopen() and loading all the dependent dylibs
+      # is time-consuming, see https://crbug.com/1197495.
+      public_deps = [ ":views_examples_framework+link" ]
+    } else {
+      public_deps = [ ":views_examples_framework" ]
+    }
+  }
+
+  tweak_info_plist("views_examples_framework_plist") {
+    testonly = true
+    info_plist = "views_examples_framework.plist"
+    args = [
+      "--breakpad=0",
+      "--keystone=0",
+      "--scm=1",
+      "--version",
+      views_examples_version,
+      "--branding",
+      views_examples_app_name,
+    ]
+  }
+
+  mac_framework_bundle("views_examples_framework") {
+    testonly = true
+
+    output_name = "$views_examples_framework_name"
+
+    framework_version = views_examples_version
+
+    framework_contents = [
+      "Libraries",
+      "Resources",
+    ]
+
+    deps = [
+      ":views_examples_main",
+      "//third_party/icu:icudata",
+    ]
+
+    if (!use_static_angle) {
+      deps += [ ":views_examples_angle_binaries" ]
+    }
+
+    bundle_deps = [ ":views_examples_framework_resources" ]
+
+    if (is_component_build) {
+      # Needed so that the views_examples Mac Main can find the framework.
+      ldflags =
+          [ "-Wl,-install_name,@rpath/$output_name.framework/$output_name" ]
+
+      # Set up the rpath for the framework so that it can find dylibs in the
+      # root output directory. The framework is at Views
+      # Examples.app/Contents/Frameworks/Views Examples
+      # Framework.framework/Versions/[views_examples_version]/Views Examples
+      # Framework so use loader_path to go back to the root output directory.
+      ldflags += [ "-Wl,-rpath,@loader_path/../../../../../.." ]
+    } else {
+      # Specify a sensible install_name for static builds. The library is
+      # dlopen()ed so this is not used to resolve the module.
+      ldflags = [ "-Wl,-install_name,@executable_path/../Frameworks/$output_name.framework/$output_name.framework" ]
+      deps += [ "//base/test:test_trace_processor_bundle_data" ]
+    }
+
+    info_plist_target = ":views_examples_framework_plist"
+  }
+
+  bundle_data("views_examples_framework_resources") {
+    testonly = true
+
+    sources = [
+      "$root_out_dir/icudtl.dat",
+      "$root_out_dir/ui_test.pak",
+      "$root_out_dir/views_examples_resources.pak",
+    ]
+    public_deps = [
+      ":views_examples_resources_pak",
+      "//ui/resources:ui_test_pak",
+    ]
+    deps = [ "//third_party/icu:icudata" ]
+
+    outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
+  }
+
+  # Add the ANGLE .dylibs in the Libraries directory of the Framework.
+  if (!use_static_angle) {
+    bundle_data("views_examples_angle_binaries") {
+      sources = [
+        "$root_out_dir/egl_intermediates/libEGL.dylib",
+        "$root_out_dir/egl_intermediates/libGLESv2.dylib",
+      ]
+      outputs = [ "{{bundle_contents_dir}}/Libraries/{{source_file_part}}" ]
+      public_deps = [ "//ui/gl:angle_library_copy" ]
+    }
+  }
+} else {
+  executable("views_examples") {
+    testonly = true
+
+    deps = [
+      ":views_examples_main",
+      "//build/win:default_exe_manifest",
+    ]
+  }
 }
 
 component("views_examples_with_content_lib") {
@@ -314,6 +499,7 @@ test("views_examples_unittests") {
   sources = [
     "examples_unittest.cc",
     "examples_unittest_main.cc",
+    "json_view_builder_unittest.cc",
   ]
 
   deps = [
@@ -324,6 +510,7 @@ test("views_examples_unittests") {
     "//components/viz/host",
     "//components/viz/service",
     "//mojo/core/embedder",
+    "//ui/accessibility:test_support",
     "//ui/base",
     "//ui/base/ime/init",
     "//ui/compositor",
@@ -343,9 +530,6 @@ test("views_examples_unittests") {
       "//ui/wm",
     ]
   }
-  if (is_win) {
-    deps += [ "//ui/native_theme" ]
-  }
 
   if (is_fuchsia) {
     additional_manifest_fragments = [
@@ -361,4 +545,35 @@ test("views_examples_unittests") {
   ]
 
   data = [ "$root_out_dir/views_examples_resources.pak" ]
+}
+
+executable("vector_icon_viewer") {
+  testonly = true
+  sources = [ "vector_icon_viewer.cc" ]
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//ui/gfx",
+    "//ui/views",
+    "//ui/views/examples:views_examples_lib",
+    "//ui/views/examples:views_examples_proc",
+  ]
+}
+
+executable("lottie_viewer") {
+  testonly = true
+  sources = [ "lottie_viewer.cc" ]
+  deps = [
+    ":views_examples_lib",
+    ":views_examples_proc",
+    "//base",
+    "//base/test:test_support",
+    "//cc/paint",
+    "//skia",
+    "//ui/base",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/lottie",
+    "//ui/views",
+  ]
 }

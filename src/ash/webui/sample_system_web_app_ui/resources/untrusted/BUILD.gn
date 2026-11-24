@@ -1,17 +1,17 @@
-# Copyright 2026 The Chromium Authors and Alex313031
+# Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import("//ui/webui/resources/tools/build_webui.gni")
 
-assert(is_chromeos_ash, "Sample System Web App is ash-chrome only")
+assert(is_chromeos, "Sample System Web App is ChromeOS only")
 
 build_webui("build") {
   grd_prefix = "ash_sample_system_web_app_untrusted"
 
   static_files = [ "untrusted.html" ]
 
-  non_web_component_files = [
+  ts_files = [
     "untrusted.ts",
     "untrusted_page_interface.ts",
   ]
@@ -26,5 +26,6 @@ build_webui("build") {
   ts_composite = true
   ts_deps = [ "//ui/webui/resources/mojo:build_ts" ]
 
+  webui_context_type = "untrusted"
   grit_output_dir = "$root_gen_dir/ash/webui"
 }
